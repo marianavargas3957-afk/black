@@ -656,6 +656,10 @@
     border-right-color: transparent;
     animation: typing 2.5s steps(30, end);
   }
+  .hero-title .typing-line.typing-complete {
+    border-right-color: transparent;
+    animation: none;
+  }
   @keyframes typing {
     from { width: 0; }
     to { width: 100%; }
@@ -1092,11 +1096,18 @@ const observer = new IntersectionObserver((entries) => {
           line.style.animation = 'none';
           line.offsetHeight; /* trigger reflow */
           const delay = index * 0.8; // Stagger each line
+          const totalDuration = 2.5 + delay; // Time when typing finishes for this line
+          
           if (line.classList.contains('outline-only')) {
             line.style.animation = `typing 2.5s steps(30, end) ${delay}s forwards`;
           } else {
-            line.style.animation = `typing 2.5s steps(30, end) ${delay}s forwards, blink-caret 0.75s step-end ${delay + 2.5}s infinite`;
+            line.style.animation = `typing 2.5s steps(30, end) ${delay}s forwards, blink-caret 0.75s step-end ${delay}s infinite`;
           }
+          
+          // Remove cursor after typing completes
+          setTimeout(() => {
+            line.classList.add('typing-complete');
+          }, (totalDuration + 0.1) * 1000);
         });
       } else {
         target.classList.add('visible');
