@@ -640,6 +640,31 @@
   .reveal-delay-3 { transition-delay: 0.3s; }
   .reveal-delay-4 { transition-delay: 0.4s; }
 
+  /* Typing animation for hero-title */
+  .hero-title.typing-mode {
+    opacity: 1;
+    transform: none;
+  }
+  .hero-title .typing-line {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 3px solid #fff;
+    animation: typing 2.5s steps(30, end), blink-caret 0.75s step-end infinite;
+  }
+  .hero-title .typing-line.outline-only {
+    border-right-color: transparent;
+    animation: typing 2.5s steps(30, end);
+  }
+  @keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  @keyframes blink-caret {
+    from, to { border-color: transparent; }
+    50% { border-color: #fff; }
+  }
+
   /* Grain overlay */
   .grain {
     position: fixed;
@@ -722,10 +747,10 @@
 <section class="hero" id="hero">
   <div class="hero-bg-text">BLACKSPIKE</div>
   <div class="hero-label reveal">Creative Digital Agency</div>
-  <h1 class="hero-title reveal reveal-delay-1">
-    We craft<br>
-    <span class="outline-text">digital</span><br>
-    experiences
+  <h1 class="hero-title reveal reveal-delay-1" id="heroTitle">
+    <span class="typing-line">We craft<br></span><br>
+    <span class="typing-line outline-only"><span class="outline-text">digital</span></span><br>
+    <span class="typing-line">experiences</span>
   </h1>
   <p class="hero-subtitle reveal reveal-delay-2">
     A creative studio specializing in brand identity, digital design, and development. We build bold brands that stand out.
@@ -1055,7 +1080,27 @@ const reveals = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
+      const target = entry.target;
+      
+      // Special handling for hero-title typing animation
+      if (target.id === 'heroTitle' && !target.classList.contains('typing-started')) {
+        target.classList.add('typing-mode', 'visible', 'typing-started');
+        
+        // Reset and restart animations for each line
+        const lines = target.querySelectorAll('.typing-line');
+        lines.forEach((line, index) => {
+          line.style.animation = 'none';
+          line.offsetHeight; /* trigger reflow */
+          const delay = index * 0.8; // Stagger each line
+          if (line.classList.contains('outline-only')) {
+            line.style.animation = `typing 2.5s steps(30, end) ${delay}s forwards`;
+          } else {
+            line.style.animation = `typing 2.5s steps(30, end) ${delay}s forwards, blink-caret 0.75s step-end ${delay + 2.5}s infinite`;
+          }
+        });
+      } else {
+        target.classList.add('visible');
+      }
     }
   });
 }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
